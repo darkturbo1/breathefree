@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Bot, User, Loader2 } from 'lucide-react';
+import { X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatMessage } from '@/types/smoking';
 
@@ -71,7 +71,6 @@ const defaultResponses = [
 function getResponse(message: string): string {
   const lowerMessage = message.toLowerCase();
 
-  // Check for smoking-related keywords
   if (lowerMessage.includes('craving') || lowerMessage.includes('urge') || lowerMessage.includes('want to smoke')) {
     return smokingResponses.craving;
   }
@@ -88,7 +87,6 @@ function getResponse(message: string): string {
     return smokingResponses.benefits;
   }
 
-  // Check if it's smoking-related at all
   const smokingKeywords = ['smoke', 'cigarette', 'nicotine', 'quit', 'tobacco', 'lung', 'cough', 'breath'];
   const isSmokingRelated = smokingKeywords.some(keyword => lowerMessage.includes(keyword));
 
@@ -134,7 +132,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
     setInput('');
     setIsTyping(true);
 
-    // Simulate typing delay
     setTimeout(() => {
       const response = getResponse(userMessage.content);
       const assistantMessage: ChatMessage = {
@@ -156,34 +153,35 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm animate-fade-in">
-      <div className="glass-panel w-full max-w-md h-[80vh] sm:h-[600px] flex flex-col animate-slide-up overflow-hidden">
+      <div className="glass-panel-strong w-full max-w-md h-[85vh] sm:h-[650px] flex flex-col animate-slide-up overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border/50">
+        <div className="flex items-center justify-between p-5 border-b border-border/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Bot className="w-5 h-5 text-primary" />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'var(--gradient-primary)' }}>
+              <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="font-semibold">Quit Coach</h2>
+              <h2 className="font-semibold text-lg">Quit Coach</h2>
               <p className="text-xs text-muted-foreground">Here to help 24/7</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="tap-scale">
             <X className="w-5 h-5" />
           </Button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {messages.map((message, index) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${
+              className={`flex gap-3 animate-fade-in ${
                 message.role === 'user' ? 'flex-row-reverse' : ''
               }`}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
                   message.role === 'user'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary'
@@ -198,21 +196,25 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                   message.role === 'user'
-                    ? 'bg-primary text-primary-foreground rounded-tr-md'
-                    : 'bg-secondary rounded-tl-md'
+                    ? 'bg-primary text-primary-foreground rounded-tr-lg'
+                    : 'bg-secondary rounded-tl-lg'
                 }`}
               >
-                <p className="text-sm whitespace-pre-line">{message.content}</p>
+                <p className="text-sm whitespace-pre-line leading-relaxed">{message.content}</p>
               </div>
             </div>
           ))}
           {isTyping && (
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+            <div className="flex gap-3 animate-fade-in">
+              <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
                 <Bot className="w-4 h-4" />
               </div>
-              <div className="bg-secondary rounded-2xl rounded-tl-md px-4 py-3">
-                <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="bg-secondary rounded-2xl rounded-tl-lg px-4 py-3">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
               </div>
             </div>
           )}
@@ -221,15 +223,13 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
 
         {/* Quick Replies */}
         {messages.length < 3 && (
-          <div className="px-4 pb-2">
+          <div className="px-5 pb-3">
             <div className="flex gap-2 overflow-x-auto pb-2">
               {quickReplies.map((reply) => (
                 <button
                   key={reply}
-                  onClick={() => {
-                    setInput(reply);
-                  }}
-                  className="flex-shrink-0 px-4 py-2 rounded-full bg-secondary text-sm hover:bg-accent transition-colors"
+                  onClick={() => setInput(reply)}
+                  className="flex-shrink-0 px-4 py-2.5 rounded-full bg-secondary text-sm font-medium hover:bg-accent transition-colors tap-scale"
                 >
                   {reply}
                 </button>
@@ -239,8 +239,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
         )}
 
         {/* Input */}
-        <div className="p-4 border-t border-border/50">
-          <div className="flex gap-2">
+        <div className="p-5 border-t border-border/50">
+          <div className="flex gap-3">
             <input
               type="text"
               value={input}
@@ -253,9 +253,9 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
               onClick={handleSend}
               disabled={!input.trim() || isTyping}
               size="icon"
-              className="rounded-xl"
+              className="rounded-xl h-[52px] w-[52px]"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-5 h-5" />
             </Button>
           </div>
         </div>

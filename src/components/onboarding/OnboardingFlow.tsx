@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { UserData } from '@/types/smoking';
-import { Wind, ArrowRight, ArrowLeft, Cigarette, Calendar, Wallet, Package } from 'lucide-react';
+import { Wind, ArrowRight, ArrowLeft, Cigarette, Calendar, Wallet, Package, Sparkles } from 'lucide-react';
 
 interface OnboardingFlowProps {
   onComplete: (data: UserData) => void;
@@ -9,6 +9,7 @@ interface OnboardingFlowProps {
 
 const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   const [step, setStep] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [formData, setFormData] = useState({
     cigarettesPerDay: 10,
     yearsSmoked: 5,
@@ -57,9 +58,17 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
 
   const currentStep = steps[step];
 
+  const animateTransition = (callback: () => void) => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      callback();
+      setIsAnimating(false);
+    }, 200);
+  };
+
   const handleNext = () => {
     if (step < steps.length - 1) {
-      setStep(step + 1);
+      animateTransition(() => setStep(step + 1));
     } else {
       onComplete({
         ...formData,
@@ -70,7 +79,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
 
   const handleBack = () => {
     if (step > 0) {
-      setStep(step - 1);
+      animateTransition(() => setStep(step - 1));
     }
   };
 
@@ -84,30 +93,34 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="min-h-screen hero-gradient flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen hero-gradient flex flex-col items-center justify-center p-6 relative z-10">
       {/* Header */}
-      <div className="text-center mb-12 animate-fade-in">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
+      <div className="text-center mb-10 animate-fade-in">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6 animate-float">
           <Wind className="w-10 h-10 text-primary" />
         </div>
         <h1 className="text-3xl font-bold gradient-text mb-2">BreatheFree</h1>
-        <p className="text-muted-foreground">Your journey to a smoke-free life</p>
+        <p className="text-muted-foreground">Let's personalize your journey</p>
       </div>
 
       {/* Progress */}
-      <div className="flex gap-2 mb-8">
+      <div className="flex gap-3 mb-8">
         {steps.map((_, i) => (
           <div
             key={i}
-            className={`h-2 w-12 rounded-full transition-all duration-300 ${
-              i <= step ? 'bg-primary' : 'bg-primary/20'
+            className={`h-2 rounded-full transition-all duration-500 ${
+              i <= step ? 'bg-primary w-12' : 'bg-primary/20 w-8'
             }`}
           />
         ))}
       </div>
 
       {/* Card */}
-      <div className="glass-panel w-full max-w-md p-8 animate-scale-in">
+      <div
+        className={`glass-panel-strong w-full max-w-md p-8 transition-all duration-300 ${
+          isAnimating ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
+        }`}
+      >
         <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mx-auto mb-6 text-primary">
           {currentStep.icon}
         </div>
@@ -120,43 +133,49 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
         </p>
 
         {/* Value Selector */}
-        <div className="flex items-center justify-center gap-6 mb-8">
+        <div className="flex items-center justify-center gap-8 mb-8">
           <button
             onClick={() => updateValue(-1)}
-            className="w-14 h-14 rounded-full glass-button flex items-center justify-center text-2xl font-light"
+            className="w-16 h-16 rounded-2xl glass-button flex items-center justify-center text-3xl font-light tap-scale"
           >
             −
           </button>
-          <div className="text-center">
-            <span className="text-5xl font-bold gradient-text">
+          <div className="text-center min-w-[100px]">
+            <span className="text-6xl font-bold gradient-text tabular-nums">
               {formData[currentStep.field as keyof typeof formData]}
             </span>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground text-sm mt-2">
               {currentStep.unit}
             </p>
           </div>
           <button
             onClick={() => updateValue(1)}
-            className="w-14 h-14 rounded-full glass-button flex items-center justify-center text-2xl font-light"
+            className="w-16 h-16 rounded-2xl glass-button flex items-center justify-center text-3xl font-light tap-scale"
           >
             +
           </button>
         </div>
 
         {/* Slider */}
-        <input
-          type="range"
-          min={currentStep.min}
-          max={currentStep.max}
-          value={formData[currentStep.field as keyof typeof formData]}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              [currentStep.field]: Number(e.target.value),
-            })
-          }
-          className="w-full h-2 bg-secondary rounded-full appearance-none cursor-pointer accent-primary mb-8"
-        />
+        <div className="relative mb-8">
+          <input
+            type="range"
+            min={currentStep.min}
+            max={currentStep.max}
+            value={formData[currentStep.field as keyof typeof formData]}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [currentStep.field]: Number(e.target.value),
+              })
+            }
+            className="w-full h-2 bg-secondary rounded-full appearance-none cursor-pointer accent-primary"
+          />
+          <div className="flex justify-between text-xs text-muted-foreground mt-2">
+            <span>{currentStep.min}</span>
+            <span>{currentStep.max}</span>
+          </div>
+        </div>
 
         {/* Navigation */}
         <div className="flex gap-4">
@@ -175,15 +194,24 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
             onClick={handleNext}
             className="flex-1"
           >
-            {step === steps.length - 1 ? 'Start My Journey' : 'Continue'}
-            <ArrowRight className="w-4 h-4 ml-2" />
+            {step === steps.length - 1 ? (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Start My Journey
+              </>
+            ) : (
+              <>
+                Continue
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </>
+            )}
           </Button>
         </div>
       </div>
 
       {/* Footer */}
-      <p className="text-muted-foreground text-sm mt-8 text-center max-w-xs">
-        Your data stays on your device. We're here to support your journey.
+      <p className="text-muted-foreground text-sm mt-8 text-center max-w-xs animate-fade-in">
+        Your data stays private and secure on your device
       </p>
     </div>
   );

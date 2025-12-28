@@ -24,15 +24,22 @@ const StatCard: React.FC<StatCardProps> = ({
     primary: 'text-primary',
   };
 
+  const bgClasses = {
+    default: 'bg-secondary',
+    success: 'bg-success/10',
+    warning: 'bg-warning/10',
+    primary: 'bg-primary/10',
+  };
+
   return (
     <div className={`stat-card ${className}`}>
-      <div className="flex items-start justify-between mb-3">
-        <div className={`p-2 rounded-xl bg-${color === 'default' ? 'secondary' : color}/10`}>
+      <div className="flex items-start justify-between mb-4">
+        <div className={`p-3 rounded-2xl ${bgClasses[color]}`}>
           <div className={colorClasses[color]}>{icon}</div>
         </div>
       </div>
       <p className="text-sm text-muted-foreground mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${colorClasses[color]}`}>{value}</p>
+      <p className={`text-2xl font-bold ${colorClasses[color]} tabular-nums`}>{value}</p>
       {subvalue && (
         <p className="text-xs text-muted-foreground mt-1">{subvalue}</p>
       )}
