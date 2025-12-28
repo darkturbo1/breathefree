@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Wind, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
+import appLogo from '@/assets/app-logo.png';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthPageProps {
@@ -109,8 +110,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
     <div className="min-h-screen hero-gradient flex flex-col items-center justify-center p-6 relative z-10">
       {/* Logo */}
       <div className="text-center mb-10 animate-fade-in">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary/10 mb-6 animate-float">
-          <Wind className="w-12 h-12 text-primary" />
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl mb-6 animate-float overflow-hidden">
+          <img src={appLogo} alt="BreatheFree Logo" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-4xl font-bold gradient-text mb-2">BreatheFree</h1>
         <p className="text-muted-foreground text-lg">Start your smoke-free journey</p>
