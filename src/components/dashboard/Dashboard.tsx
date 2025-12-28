@@ -10,7 +10,8 @@ import JournalTab from './JournalTab';
 import AchievementsTab from './AchievementsTab';
 import MotivationTab from './MotivationTab';
 import SettingsSheet from '../settings/SettingsSheet';
-import { Wind, Clock, Cigarette, Wallet, Heart, Trophy, MessageCircle, LogOut, ChevronDown, User, Settings, Crown, Lock } from 'lucide-react';
+import { Clock, Cigarette, Wallet, Heart, Trophy, MessageCircle, LogOut, ChevronDown, User, Settings, Crown, Lock } from 'lucide-react';
+import appLogo from '@/assets/app-logo.png';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -205,8 +206,8 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onReset
       <header className="sticky top-0 z-40 backdrop-blur-2xl bg-background/70 border-b border-border/50 pt-safe">
         <div className="max-w-2xl mx-auto px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Wind className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-2xl overflow-hidden">
+              <img src={appLogo} alt="BreatheFree" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
