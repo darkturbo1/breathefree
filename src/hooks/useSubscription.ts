@@ -18,6 +18,15 @@ export function useSubscription() {
 
   const checkSubscription = useCallback(async () => {
     try {
+      // First check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        console.log('No active session, skipping subscription check');
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
       if (error) {
@@ -41,9 +50,32 @@ export function useSubscription() {
   useEffect(() => {
     checkSubscription();
     
-    // Check every 60 seconds
-    const interval = setInterval(checkSubscription, 60000);
-    return () => clearInterval(interval);
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        checkSubscription();
+      } else if (event === 'SIGNED_OUT') {
+        setState({
+          subscribed: false,
+          productId: null,
+          subscriptionEnd: null,
+          isLoading: false,
+        });
+      }
+    });
+    
+    // Check every 60 seconds only if user is authenticated
+    const interval = setInterval(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        checkSubscription();
+      }
+    }, 60000);
+    
+    return () => {
+      subscription.unsubscribe();
+      clearInterval(interval);
+    };
   }, [checkSubscription]);
 
   const startCheckout = async () => {
