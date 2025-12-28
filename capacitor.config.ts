@@ -1,9 +1,28 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.e621e97eab9b4eefbcb2c020712941a9',
-  appName: 'breathefree',
-  webDir: 'dist'
+  appId: 'app.breathefree.quit',
+  appName: 'BreatheFree',
+  webDir: 'dist',
+  ios: {
+    contentInset: 'automatic',
+    preferredContentMode: 'mobile',
+    scheme: 'BreatheFree'
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      launchAutoHide: true,
+      backgroundColor: '#4A90A4',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true
+    },
+    StatusBar: {
+      style: 'dark',
+      backgroundColor: '#4A90A4'
+    }
+  }
 };
 
 export default config;
