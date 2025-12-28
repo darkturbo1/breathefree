@@ -73,6 +73,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
       onComplete({
         ...formData,
         quitDate: new Date(),
+        currency: 'EUR',
       });
     }
   };
