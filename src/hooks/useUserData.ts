@@ -11,6 +11,7 @@ type UserPreferencesRow = {
   price_per_pack: number | string;
   cigarettes_per_pack: number;
   quit_date: string;
+  currency?: string;
 };
 
 const readLocalUserData = (): UserData | null => {
@@ -62,6 +63,7 @@ export function useUserData() {
       pricePerPack: Number(row.price_per_pack),
       cigarettesPerPack: row.cigarettes_per_pack,
       quitDate: new Date(row.quit_date),
+      currency: row.currency || 'EUR',
     } satisfies UserData;
   }, []);
 
@@ -74,6 +76,7 @@ export function useUserData() {
         price_per_pack: data.pricePerPack,
         cigarettes_per_pack: data.cigarettesPerPack,
         quit_date: data.quitDate.toISOString(),
+        currency: data.currency || 'EUR',
       },
       { onConflict: 'user_id' }
     );
@@ -91,8 +94,9 @@ export function useUserData() {
         if (cancelled) return;
 
         if (dbData) {
-          setUserData(dbData);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
+          const dataWithCurrency = { ...dbData, currency: dbData.currency || 'EUR' };
+          setUserData(dataWithCurrency);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithCurrency));
           setIsLoading(false);
           return;
         }
