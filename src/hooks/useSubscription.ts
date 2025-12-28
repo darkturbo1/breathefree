@@ -101,7 +101,8 @@ export function useSubscription() {
       }
       
       if (data?.url) {
-        window.open(data.url, '_blank');
+        // Use location.href instead of window.open for mobile compatibility
+        window.location.href = data.url;
       } else if (data?.error) {
         throw new Error(data.error);
       } else {
