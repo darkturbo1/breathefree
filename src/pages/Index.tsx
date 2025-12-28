@@ -12,7 +12,7 @@ import { User, Session } from '@supabase/supabase-js';
 type AppStep = 'loading' | 'auth' | 'scary-stats' | 'questionnaire' | 'dashboard';
 
 const Index: React.FC = () => {
-  const { userData, saveUserData, clearUserData, isLoading: isDataLoading } = useUserData();
+  const { userData, saveUserData, clearUserData, resetProgram, isLoading: isDataLoading } = useUserData();
   const stats = useStats(userData);
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -99,7 +99,7 @@ const Index: React.FC = () => {
   }
 
   if (step === 'dashboard' && userData && stats) {
-    return <Dashboard userData={userData} stats={stats} onReset={handleReset} />;
+    return <Dashboard userData={userData} stats={stats} onReset={handleReset} onResetProgram={resetProgram} />;
   }
 
   return null;

@@ -7,16 +7,28 @@ import { Label } from '@/components/ui/label';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { User, CreditCard, Shield, Loader2, Crown, Check, ExternalLink } from 'lucide-react';
+import { User, CreditCard, Shield, Loader2, Crown, Check, ExternalLink, RotateCcw, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface SettingsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userEmail: string;
+  onResetProgram?: () => Promise<void>;
 }
 
-const SettingsSheet: React.FC<SettingsSheetProps> = ({ open, onOpenChange, userEmail }) => {
+const SettingsSheet: React.FC<SettingsSheetProps> = ({ open, onOpenChange, userEmail, onResetProgram }) => {
   const { toast } = useToast();
   const { subscribed, subscriptionEnd, isLoading: subLoading, startCheckout, openCustomerPortal } = useSubscription();
   
@@ -27,6 +39,26 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({ open, onOpenChange, userE
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleResetProgram = async () => {
+    if (!onResetProgram) return;
+    
+    setIsResetting(true);
+    try {
+      await onResetProgram();
+      toast({
+        title: "Program Reset",
+        description: "Your quit journey has been restarted. You've got this!",
+      });
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+  
 
   const handleUpdateEmail = async () => {
     if (!newEmail.trim()) {
@@ -175,6 +207,61 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({ open, onOpenChange, userE
                 )}
               </Button>
             </div>
+
+            {/* Reset Program */}
+            {onResetProgram && (
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-destructive" />
+                  <Label className="text-destructive">Reset Program</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Started smoking again? No judgment – relapse is part of many quit journeys. 
+                  Reset your program to start fresh with a new quit date.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="destructive" 
+                      className="w-full"
+                      disabled={isResetting}
+                    >
+                      {isResetting ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Resetting...</>
+                      ) : (
+                        <>
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Reset My Journey
+                        </>
+                      )}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <RotateCcw className="w-5 h-5" />
+                        Start Over?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-2">
+                        <p>
+                          This will reset your quit date to today and clear your progress. 
+                          Your journal entries will be kept.
+                        </p>
+                        <p className="font-medium text-foreground">
+                          Remember: Every quit attempt teaches you something. You've got this! 💪
+                        </p>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleResetProgram}>
+                        Yes, Start Fresh
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="subscription" className="space-y-6 mt-6">
