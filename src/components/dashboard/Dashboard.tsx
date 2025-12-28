@@ -29,9 +29,10 @@ interface DashboardProps {
   stats: Stats;
   onReset: () => void;
   onResetProgram: () => Promise<void>;
+  onUpdateUserData: (data: UserData) => Promise<void>;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onResetProgram }) => {
+const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onResetProgram, onUpdateUserData }) => {
   const [showChat, setShowChat] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
@@ -113,7 +114,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onReset
               <StatCard
                 icon={<Wallet className="w-5 h-5" />}
                 label="Money Saved"
-                value={formatMoney(stats.moneySaved)}
+                value={formatMoney(stats.moneySaved, userData.currency)}
                 subvalue="so far"
                 color="primary"
               />
@@ -324,7 +325,14 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onReset
 
       {/* Modals */}
       {showChat && subscribed && <ChatBot onClose={() => setShowChat(false)} />}
-      <SettingsSheet open={showSettings} onOpenChange={setShowSettings} userEmail={userEmail} onResetProgram={onResetProgram} />
+      <SettingsSheet 
+        open={showSettings} 
+        onOpenChange={setShowSettings} 
+        userEmail={userEmail} 
+        userData={userData}
+        onResetProgram={onResetProgram} 
+        onUpdateUserData={onUpdateUserData}
+      />
     </div>
   );
 };

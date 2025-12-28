@@ -162,15 +162,22 @@ export function useUserData() {
   }, [authUserId]);
 
   const resetProgram = useCallback(async () => {
-    if (!userData) return;
+    // Clear user data to show onboarding again
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('breathe-free-seen-stats');
+    setUserData(null);
 
-    const newData: UserData = {
-      ...userData,
-      quitDate: new Date(), // Reset quit date to now
-    };
+    try {
+      const userId =
+        authUserId ?? (await supabase.auth.getUser()).data.user?.id ?? null;
 
-    await saveUserData(newData);
-  }, [userData, saveUserData]);
+      if (userId) {
+        await preferencesTable().delete().eq('user_id', userId);
+      }
+    } catch {
+      // ignore
+    }
+  }, [authUserId]);
 
   return { userData, saveUserData, clearUserData, resetProgram, isLoading };
 }

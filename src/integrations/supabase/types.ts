@@ -52,6 +52,7 @@ export type Database = {
           cigarettes_per_day: number
           cigarettes_per_pack: number
           created_at: string
+          currency: string
           id: string
           price_per_pack: number
           quit_date: string
@@ -63,6 +64,7 @@ export type Database = {
           cigarettes_per_day?: number
           cigarettes_per_pack?: number
           created_at?: string
+          currency?: string
           id?: string
           price_per_pack?: number
           quit_date?: string
@@ -74,6 +76,7 @@ export type Database = {
           cigarettes_per_day?: number
           cigarettes_per_pack?: number
           created_at?: string
+          currency?: string
           id?: string
           price_per_pack?: number
           quit_date?: string
