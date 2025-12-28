@@ -4,128 +4,158 @@ import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'breathe-free-user-data';
 
+type UserPreferencesRow = {
+  user_id: string;
+  cigarettes_per_day: number;
+  years_smoked: number;
+  price_per_pack: number | string;
+  cigarettes_per_pack: number;
+  quit_date: string;
+};
+
+const readLocalUserData = (): UserData | null => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return null;
+
+  try {
+    const parsed = JSON.parse(stored);
+    parsed.quitDate = new Date(parsed.quitDate);
+    return parsed as UserData;
+  } catch {
+    return null;
+  }
+};
+
+const preferencesTable = () => supabase.from('user_preferences' as any);
+
 export function useUserData() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
 
-  // Fetch user data from database
-  const fetchFromDatabase = useCallback(async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_preferences')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+  // Track auth user id (so data loads AFTER login)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUserId(session?.user?.id ?? null);
+    });
 
-      if (error) {
-        console.error('Error fetching user preferences:', error);
-        return null;
-      }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthUserId(session?.user?.id ?? null);
+    });
 
-      if (data) {
-        const userData: UserData = {
-          cigarettesPerDay: data.cigarettes_per_day,
-          yearsSmoked: data.years_smoked,
-          pricePerPack: Number(data.price_per_pack),
-          cigarettesPerPack: data.cigarettes_per_pack,
-          quitDate: new Date(data.quit_date),
-        };
-        return userData;
-      }
-      return null;
-    } catch (e) {
-      console.error('Failed to fetch user data from database:', e);
-      return null;
-    }
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Load user data on mount
+  const fetchFromDatabase = useCallback(async (userId: string) => {
+    const { data, error } = await preferencesTable()
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    const row = data as unknown as UserPreferencesRow;
+
+    return {
+      cigarettesPerDay: row.cigarettes_per_day,
+      yearsSmoked: row.years_smoked,
+      pricePerPack: Number(row.price_per_pack),
+      cigarettesPerPack: row.cigarettes_per_pack,
+      quitDate: new Date(row.quit_date),
+    } satisfies UserData;
+  }, []);
+
+  const upsertToDatabase = useCallback(async (userId: string, data: UserData) => {
+    await preferencesTable().upsert(
+      {
+        user_id: userId,
+        cigarettes_per_day: data.cigarettesPerDay,
+        years_smoked: data.yearsSmoked,
+        price_per_pack: data.pricePerPack,
+        cigarettes_per_pack: data.cigarettesPerPack,
+        quit_date: data.quitDate.toISOString(),
+      },
+      { onConflict: 'user_id' }
+    );
+  }, []);
+
+  // Load user data whenever auth changes
   useEffect(() => {
-    const loadUserData = async () => {
+    let cancelled = false;
+
+    const load = async () => {
       setIsLoading(true);
-      
-      // Check if user is authenticated
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        // Try to fetch from database first
-        const dbData = await fetchFromDatabase(user.id);
+
+      if (authUserId) {
+        const dbData = await fetchFromDatabase(authUserId);
+        if (cancelled) return;
+
         if (dbData) {
           setUserData(dbData);
-          // Also store in localStorage for offline access
           localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
           setIsLoading(false);
           return;
         }
+
+        // No DB record yet -> fall back to localStorage and seed DB once
+        const local = readLocalUserData();
+        if (local) {
+          setUserData(local);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(local));
+          void upsertToDatabase(authUserId, local);
+        } else {
+          setUserData(null);
+        }
+
+        setIsLoading(false);
+        return;
       }
 
-      // Fallback to localStorage
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          parsed.quitDate = new Date(parsed.quitDate);
-          setUserData(parsed);
-        } catch (e) {
-          console.error('Failed to parse stored user data:', e);
-        }
-      }
+      // Logged out: keep local copy (app still gates dashboard by auth)
+      setUserData(readLocalUserData());
       setIsLoading(false);
     };
 
-    loadUserData();
-  }, [fetchFromDatabase]);
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [authUserId, fetchFromDatabase, upsertToDatabase]);
 
-  const saveUserData = async (data: UserData) => {
-    // Save to localStorage immediately
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    setUserData(data);
+  const saveUserData = useCallback(
+    async (data: UserData) => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      setUserData(data);
 
-    // Try to save to database if authenticated
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { error } = await supabase
-          .from('user_preferences')
-          .upsert({
-            user_id: user.id,
-            cigarettes_per_day: data.cigarettesPerDay,
-            years_smoked: data.yearsSmoked,
-            price_per_pack: data.pricePerPack,
-            cigarettes_per_pack: data.cigarettesPerPack,
-            quit_date: data.quitDate.toISOString(),
-          }, {
-            onConflict: 'user_id'
-          });
+      try {
+        const userId =
+          authUserId ?? (await supabase.auth.getUser()).data.user?.id ?? null;
 
-        if (error) {
-          console.error('Error saving user preferences:', error);
+        if (userId) {
+          await upsertToDatabase(userId, data);
         }
+      } catch {
+        // Keep local save even if network fails
       }
-    } catch (e) {
-      console.error('Failed to save user data to database:', e);
-    }
-  };
+    },
+    [authUserId, upsertToDatabase]
+  );
 
-  const clearUserData = async () => {
+  const clearUserData = useCallback(async () => {
     localStorage.removeItem(STORAGE_KEY);
     setUserData(null);
 
-    // Try to delete from database if authenticated
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        await supabase
-          .from('user_preferences')
-          .delete()
-          .eq('user_id', user.id);
+      const userId =
+        authUserId ?? (await supabase.auth.getUser()).data.user?.id ?? null;
+
+      if (userId) {
+        await preferencesTable().delete().eq('user_id', userId);
       }
-    } catch (e) {
-      console.error('Failed to delete user data from database:', e);
+    } catch {
+      // ignore
     }
-  };
+  }, [authUserId]);
 
   return { userData, saveUserData, clearUserData, isLoading };
 }
