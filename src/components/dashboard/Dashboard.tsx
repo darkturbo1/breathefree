@@ -5,7 +5,8 @@ import { calculateMilestones } from '@/lib/healthMilestones';
 import StatCard from './StatCard';
 import MilestoneCard from './MilestoneCard';
 import ChatBot from '../chat/ChatBot';
-import { Wind, Clock, Cigarette, Wallet, Heart, Trophy, MessageCircle, LogOut, ChevronDown, User } from 'lucide-react';
+import JournalModal from '../journal/JournalModal';
+import { Wind, Clock, Cigarette, Wallet, Heart, Trophy, MessageCircle, LogOut, ChevronDown, User, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +19,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
   const [showChat, setShowChat] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
   const [showAllMilestones, setShowAllMilestones] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const { toast } = useToast();
@@ -174,17 +176,26 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
         </div>
       </main>
 
-      {/* Chat FAB */}
-      <button
-        onClick={() => setShowChat(true)}
-        className="fixed bottom-6 right-6 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 z-50 tap-scale shadow-glow-lg"
-        style={{ background: 'var(--gradient-primary)' }}
-      >
-        <MessageCircle className="w-7 h-7 text-primary-foreground" />
-      </button>
+      {/* FABs */}
+      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+        <button
+          onClick={() => setShowJournal(true)}
+          className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 tap-scale bg-secondary border border-border shadow-lg"
+        >
+          <BookOpen className="w-6 h-6 text-foreground" />
+        </button>
+        <button
+          onClick={() => setShowChat(true)}
+          className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 tap-scale shadow-glow-lg"
+          style={{ background: 'var(--gradient-primary)' }}
+        >
+          <MessageCircle className="w-7 h-7 text-primary-foreground" />
+        </button>
+      </div>
 
-      {/* Chat Modal */}
+      {/* Modals */}
       {showChat && <ChatBot onClose={() => setShowChat(false)} />}
+      <JournalModal open={showJournal} onOpenChange={setShowJournal} />
     </div>
   );
 };
