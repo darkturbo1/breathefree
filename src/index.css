@@ -233,6 +233,7 @@
     background: var(--gradient-orb-1);
     filter: blur(80px);
     animation: float-slow 20s ease-in-out infinite;
+    pointer-events: none;
   }
 
   .hero-gradient::after {
@@ -245,6 +246,7 @@
     background: var(--gradient-orb-2);
     filter: blur(60px);
     animation: float-slow 15s ease-in-out infinite reverse;
+    pointer-events: none;
   }
 
   .stat-card {
