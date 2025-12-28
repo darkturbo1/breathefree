@@ -93,7 +93,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="min-h-screen hero-gradient flex flex-col items-center justify-center p-6 relative z-10">
+    <div className="min-h-screen hero-gradient flex flex-col items-center justify-center p-6 pb-24 relative z-10">
       {/* Header */}
       <div className="text-center mb-10 animate-fade-in">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6 animate-float">
