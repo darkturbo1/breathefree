@@ -47,6 +47,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          cigarettes_per_day: number
+          cigarettes_per_pack: number
+          created_at: string
+          id: string
+          price_per_pack: number
+          quit_date: string
+          updated_at: string
+          user_id: string
+          years_smoked: number
+        }
+        Insert: {
+          cigarettes_per_day?: number
+          cigarettes_per_pack?: number
+          created_at?: string
+          id?: string
+          price_per_pack?: number
+          quit_date?: string
+          updated_at?: string
+          user_id: string
+          years_smoked?: number
+        }
+        Update: {
+          cigarettes_per_day?: number
+          cigarettes_per_pack?: number
+          created_at?: string
+          id?: string
+          price_per_pack?: number
+          quit_date?: string
+          updated_at?: string
+          user_id?: string
+          years_smoked?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
