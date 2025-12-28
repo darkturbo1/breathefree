@@ -157,5 +157,16 @@ export function useUserData() {
     }
   }, [authUserId]);
 
-  return { userData, saveUserData, clearUserData, isLoading };
+  const resetProgram = useCallback(async () => {
+    if (!userData) return;
+
+    const newData: UserData = {
+      ...userData,
+      quitDate: new Date(), // Reset quit date to now
+    };
+
+    await saveUserData(newData);
+  }, [userData, saveUserData]);
+
+  return { userData, saveUserData, clearUserData, resetProgram, isLoading };
 }

@@ -28,9 +28,10 @@ interface DashboardProps {
   userData: UserData;
   stats: Stats;
   onReset: () => void;
+  onResetProgram: () => Promise<void>;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
+const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onResetProgram }) => {
   const [showChat, setShowChat] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
@@ -323,7 +324,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
 
       {/* Modals */}
       {showChat && subscribed && <ChatBot onClose={() => setShowChat(false)} />}
-      <SettingsSheet open={showSettings} onOpenChange={setShowSettings} userEmail={userEmail} />
+      <SettingsSheet open={showSettings} onOpenChange={setShowSettings} userEmail={userEmail} onResetProgram={onResetProgram} />
     </div>
   );
 };
