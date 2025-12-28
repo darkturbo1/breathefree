@@ -275,7 +275,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               placeholder="Type your message..."
-              className="flex-1 glass-input text-sm outline-none"
+              className="flex-1 glass-input text-base outline-none"
+              style={{ fontSize: '16px' }}
               disabled={isTyping}
             />
             <Button
