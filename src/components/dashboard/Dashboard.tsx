@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserData, Stats } from '@/types/smoking';
 import { formatTime, formatMoney, formatLifetime } from '@/lib/statsCalculator';
 import { calculateMilestones } from '@/lib/healthMilestones';
@@ -9,7 +9,8 @@ import BottomNav, { TabType } from './BottomNav';
 import JournalTab from './JournalTab';
 import AchievementsTab from './AchievementsTab';
 import MotivationTab from './MotivationTab';
-import { Wind, Clock, Cigarette, Wallet, Heart, Trophy, MessageCircle, LogOut, ChevronDown, User } from 'lucide-react';
+import SettingsSheet from '../settings/SettingsSheet';
+import { Wind, Clock, Cigarette, Wallet, Heart, Trophy, MessageCircle, LogOut, ChevronDown, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,10 +23,20 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
   const [showChat, setShowChat] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [showAllMilestones, setShowAllMilestones] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const { toast } = useToast();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) setUserEmail(user.email);
+    };
+    getUser();
+  }, []);
 
   const hoursSinceQuit =
     stats.timeSinceQuit.days * 24 +
@@ -180,6 +191,16 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
             {showMenu && (
               <div className="absolute right-0 top-full mt-2 glass-panel-strong p-2 min-w-[160px] animate-fade-in-scale">
                 <button
+                  onClick={() => {
+                    setShowSettings(true);
+                    setShowMenu(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-left hover:bg-secondary transition-colors tap-scale"
+                >
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </button>
+                <button
                   onClick={handleLogout}
                   className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-left hover:bg-secondary transition-colors tap-scale"
                 >
@@ -208,8 +229,9 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Chat Modal */}
+      {/* Modals */}
       {showChat && <ChatBot onClose={() => setShowChat(false)} />}
+      <SettingsSheet open={showSettings} onOpenChange={setShowSettings} userEmail={userEmail} />
     </div>
   );
 };
