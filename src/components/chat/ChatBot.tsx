@@ -1,114 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { X, Send, User, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatMessage } from '@/types/smoking';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatBotProps {
   onClose: () => void;
 }
 
-const smokingResponses: Record<string, string> = {
-  craving: `I understand cravings can be intense. Here are some quick tips:
-
-🧘 **Deep breathing**: Take 10 slow, deep breaths
-💧 **Drink water**: Stay hydrated, it helps reduce cravings
-🚶 **Take a walk**: Even 5 minutes can help
-🍎 **Healthy snack**: Try crunchy vegetables or fruits
-⏰ **Wait it out**: Cravings usually pass in 3-5 minutes
-
-You've got this! Every craving you overcome makes you stronger.`,
-
-  motivation: `Remember why you started this journey! Here's what you're gaining:
-
-❤️ Your heart is getting healthier every day
-💰 You're saving money for things that matter
-🏃 Your energy levels are increasing
-👨‍👩‍👧‍👦 You're setting an example for loved ones
-🌟 You're proving to yourself that you CAN do this
-
-Every smoke-free moment is a victory. Be proud of yourself!`,
-
-  withdrawal: `Withdrawal symptoms are temporary signs that your body is healing. Common symptoms include:
-
-😤 Irritability - Try relaxation techniques
-😴 Sleep changes - Maintain a regular schedule
-🤔 Difficulty concentrating - Take breaks, stay hydrated
-🍽️ Increased appetite - Keep healthy snacks nearby
-😟 Anxiety - Exercise and deep breathing help
-
-These symptoms typically peak in the first 3 days and improve significantly after 2 weeks. You're doing great!`,
-
-  relapse: `A slip doesn't erase your progress! Here's what to do:
-
-1. **Don't give up** - One cigarette doesn't mean failure
-2. **Learn from it** - What triggered the slip?
-3. **Reset immediately** - You can start fresh right now
-4. **Reach out** - Talk to someone supportive
-5. **Review your reasons** - Why do you want to quit?
-
-Many successful quitters had slips along the way. What matters is that you keep trying!`,
-
-  benefits: `Here's what happens when you quit smoking:
-
-⏱️ **20 minutes**: Heart rate drops
-⏱️ **8 hours**: Oxygen levels normalize
-⏱️ **24 hours**: Heart attack risk decreases
-⏱️ **48 hours**: Nicotine leaves your body
-⏱️ **72 hours**: Breathing becomes easier
-⏱️ **2 weeks**: Circulation improves
-⏱️ **1 month**: Lung function increases 30%
-⏱️ **1 year**: Heart disease risk halved
-
-Every moment smoke-free counts!`,
-};
-
-const defaultResponses = [
-  "I'm here to help you with your smoke-free journey! You can ask me about cravings, motivation, withdrawal symptoms, or the benefits of quitting.",
-  "That's a great question about your health journey! Remember, every step forward matters, no matter how small.",
-  "I understand this journey can be challenging. Would you like some tips on handling cravings or staying motivated?",
-];
-
-function getResponse(message: string): string {
-  const lowerMessage = message.toLowerCase();
-
-  if (lowerMessage.includes('craving') || lowerMessage.includes('urge') || lowerMessage.includes('want to smoke')) {
-    return smokingResponses.craving;
-  }
-  if (lowerMessage.includes('motivat') || lowerMessage.includes('why') || lowerMessage.includes('reason')) {
-    return smokingResponses.motivation;
-  }
-  if (lowerMessage.includes('withdrawal') || lowerMessage.includes('symptom') || lowerMessage.includes('feeling bad')) {
-    return smokingResponses.withdrawal;
-  }
-  if (lowerMessage.includes('relapse') || lowerMessage.includes('slip') || lowerMessage.includes('smoked') || lowerMessage.includes('failed')) {
-    return smokingResponses.relapse;
-  }
-  if (lowerMessage.includes('benefit') || lowerMessage.includes('health') || lowerMessage.includes('happen')) {
-    return smokingResponses.benefits;
-  }
-
-  const smokingKeywords = ['smoke', 'cigarette', 'nicotine', 'quit', 'tobacco', 'lung', 'cough', 'breath'];
-  const isSmokingRelated = smokingKeywords.some(keyword => lowerMessage.includes(keyword));
-
-  if (!isSmokingRelated && message.length > 10) {
-    return "I'm specialized in helping with smoking cessation. I can answer questions about cravings, motivation, withdrawal symptoms, health benefits of quitting, and tips for staying smoke-free. How can I help with your quit journey?";
-  }
-
-  return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-}
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quit-coach-chat`;
 
 const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
       role: 'assistant',
-      content: "Hi! I'm your smoke-free companion 🌟 I'm here to help you with cravings, motivation, or any questions about your quit journey. How can I support you today?",
+      content: "Hi! I'm your Breathe Coach 🌟 I'm here to support you through cravings, celebrate your wins, and help you stay on track. How are you feeling today?",
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -119,7 +33,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -132,23 +46,134 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
     setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const response = getResponse(userMessage.content);
-      const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: response,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+    // Prepare messages for API (excluding timestamps and ids)
+    const apiMessages = [...messages, userMessage].map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    try {
+      const response = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: apiMessages }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to get response');
+      }
+
+      if (!response.body) {
+        throw new Error('No response body');
+      }
+
+      // Create assistant message placeholder
+      const assistantMessageId = (Date.now() + 1).toString();
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: assistantMessageId,
+          role: 'assistant',
+          content: '',
+          timestamp: new Date(),
+        },
+      ]);
+
+      // Stream the response
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = '';
+      let textBuffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+
+        // Process line-by-line
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMessageId
+                    ? { ...m, content: assistantContent }
+                    : m
+                )
+              );
+            }
+          } catch {
+            // Incomplete JSON, put back and wait for more
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Handle any remaining buffer
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split('\n')) {
+          if (!raw) continue;
+          if (raw.endsWith('\r')) raw = raw.slice(0, -1);
+          if (raw.startsWith(':') || raw.trim() === '') continue;
+          if (!raw.startsWith('data: ')) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMessageId
+                    ? { ...m, content: assistantContent }
+                    : m
+                )
+              );
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Chat error:', error);
+      toast({
+        title: 'Unable to respond',
+        description: error.message || 'Please try again in a moment',
+        variant: 'destructive',
+      });
+      // Remove the empty assistant message if there was an error
+      setMessages((prev) => prev.filter((m) => m.content !== ''));
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   const quickReplies = [
     "I'm having a craving",
     "Need motivation",
-    "What are the benefits?",
+    "Feeling stressed",
   ];
 
   return (
@@ -157,12 +182,15 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border/50">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'var(--gradient-primary)' }}>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center animate-pulse-glow" style={{ background: 'var(--gradient-primary)' }}>
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="font-semibold text-lg">Quit Coach</h2>
-              <p className="text-xs text-muted-foreground">Here to help 24/7</p>
+              <h2 className="font-semibold text-lg">Breathe Coach</h2>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="w-2 h-2 bg-success rounded-full animate-pulse"></span>
+                AI-powered support
+              </p>
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="tap-scale">
@@ -190,7 +218,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
                 {message.role === 'user' ? (
                   <User className="w-4 h-4" />
                 ) : (
-                  <Bot className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 text-primary" />
                 )}
               </div>
               <div
@@ -204,10 +232,10 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
               </div>
             </div>
           ))}
-          {isTyping && (
+          {isTyping && messages[messages.length - 1]?.content === '' && (
             <div className="flex gap-3 animate-fade-in">
               <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
-                <Bot className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-primary" />
               </div>
               <div className="bg-secondary rounded-2xl rounded-tl-lg px-4 py-3">
                 <div className="flex gap-1">
@@ -245,9 +273,10 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               placeholder="Type your message..."
               className="flex-1 glass-input text-sm outline-none"
+              disabled={isTyping}
             />
             <Button
               onClick={handleSend}
@@ -255,7 +284,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
               size="icon"
               className="rounded-xl h-[52px] w-[52px]"
             >
-              <Send className="w-5 h-5" />
+              {isTyping ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
             </Button>
           </div>
         </div>
