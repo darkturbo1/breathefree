@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart } from 'recharts';
 import { healthRecoveryData } from '@/lib/healthMilestones';
 import { TrendingUp, Heart, Wind, Activity } from 'lucide-react';
@@ -6,6 +6,95 @@ import { TrendingUp, Heart, Wind, Activity } from 'lucide-react';
 interface HealthProgressChartProps {
   hoursSinceQuit: number;
 }
+
+// Animated counter hook
+const useCountUp = (end: number, duration: number = 1500) => {
+  const [count, setCount] = useState(0);
+  const prevEndRef = useRef(end);
+  
+  useEffect(() => {
+    const startValue = prevEndRef.current !== end ? prevEndRef.current : 0;
+    prevEndRef.current = end;
+    
+    if (end === startValue) return;
+    
+    const startTime = Date.now();
+    const diff = end - startValue;
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const current = Math.round(startValue + diff * easeOutQuart);
+      
+      setCount(current);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [end, duration]);
+  
+  return count;
+};
+
+// Individual metric card with animations
+const MetricCard: React.FC<{
+  metric: {
+    label: string;
+    value: number;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    bgColor: string;
+  };
+  index: number;
+}> = ({ metric, index }) => {
+  const animatedValue = useCountUp(metric.value, 1200);
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), index * 100);
+    return () => clearTimeout(timer);
+  }, [index]);
+  
+  return (
+    <div 
+      className={`glass-panel p-4 transition-all duration-500 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+      style={{ transitionDelay: `${index * 100}ms` }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`p-1.5 rounded-lg ${metric.bgColor} transition-transform duration-300 hover:scale-110`}>
+          <metric.icon className={`w-4 h-4 ${metric.color}`} />
+        </div>
+        <span className="text-xs text-muted-foreground">{metric.label}</span>
+      </div>
+      <div className="flex items-end gap-1">
+        <span className={`text-2xl font-bold transition-all duration-300 ${
+          animatedValue > 0 ? 'text-foreground' : 'text-muted-foreground'
+        }`}>
+          {animatedValue}%
+        </span>
+        <span className="text-xs text-muted-foreground mb-1">recovered</span>
+      </div>
+      <div className="mt-2 h-1.5 bg-secondary rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-1000 ease-out"
+          style={{
+            width: `${metric.value}%`,
+            background: 'var(--gradient-primary)',
+            boxShadow: metric.value > 0 ? '0 0 8px hsl(var(--primary) / 0.5)' : 'none',
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const HealthProgressChart: React.FC<HealthProgressChartProps> = ({ hoursSinceQuit }) => {
   // Determine current progress point based on hours
@@ -68,28 +157,8 @@ const HealthProgressChart: React.FC<HealthProgressChartProps> = ({ hoursSinceQui
     <div className="space-y-6">
       {/* Health Metrics Cards */}
       <div className="grid grid-cols-2 gap-3">
-        {healthMetrics.map((metric) => (
-          <div key={metric.label} className="glass-panel p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className={`p-1.5 rounded-lg ${metric.bgColor}`}>
-                <metric.icon className={`w-4 h-4 ${metric.color}`} />
-              </div>
-              <span className="text-xs text-muted-foreground">{metric.label}</span>
-            </div>
-            <div className="flex items-end gap-1">
-              <span className="text-2xl font-bold">{metric.value}%</span>
-              <span className="text-xs text-muted-foreground mb-1">recovered</span>
-            </div>
-            <div className="mt-2 h-1.5 bg-secondary rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-1000"
-                style={{
-                  width: `${metric.value}%`,
-                  background: 'var(--gradient-primary)',
-                }}
-              />
-            </div>
-          </div>
+        {healthMetrics.map((metric, index) => (
+          <MetricCard key={metric.label} metric={metric} index={index} />
         ))}
       </div>
 
