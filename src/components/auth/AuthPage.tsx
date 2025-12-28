@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Wind, Mail, Eye, EyeOff, Loader2, Chrome } from 'lucide-react';
+import { Wind, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthPageProps {
@@ -9,7 +9,7 @@ interface AuthPageProps {
 }
 
 const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false); // Default to signup
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -45,70 +45,62 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast({
+              title: "Account not found",
+              description: "No account exists with this email. Please sign up first.",
+              variant: "destructive",
+            });
+            setIsLogin(false); // Switch to signup mode
+          } else {
+            throw error;
+          }
+          return;
+        }
+        toast({
+          title: "Welcome back!",
+          description: "You're now signed in.",
+        });
         onAuthSuccess();
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
           },
         });
-        if (error) throw error;
-        toast({
-          title: "Account created!",
-          description: "You're now signed in.",
-        });
-        onAuthSuccess();
+        if (error) {
+          if (error.message.includes('User already registered')) {
+            toast({
+              title: "Account exists",
+              description: "This email is already registered. Please sign in instead.",
+              variant: "destructive",
+            });
+            setIsLogin(true); // Switch to login mode
+          } else {
+            throw error;
+          }
+          return;
+        }
+        
+        // Check if user was created and signed in
+        if (data.user) {
+          toast({
+            title: "Account created!",
+            description: "Welcome to BreatheFree!",
+          });
+          onAuthSuccess();
+        }
       }
     } catch (error: any) {
       toast({
         title: "Authentication failed",
-        description: error.message || "Something went wrong",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleAuth = async () => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Google sign in failed",
-        description: "Please configure Google OAuth in your dashboard",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  };
-
-  const handleAppleAuth = async () => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Apple sign in failed",
-        description: "Please configure Apple OAuth in your dashboard",
-        variant: "destructive",
-      });
       setIsLoading(false);
     }
   };
@@ -126,46 +118,38 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
 
       {/* Auth Card */}
       <div className="glass-panel-strong w-full max-w-md p-8 animate-fade-in-scale animate-delay-200">
+        {/* Tab Switcher */}
+        <div className="flex bg-secondary rounded-2xl p-1.5 mb-8">
+          <button
+            onClick={() => setIsLogin(false)}
+            className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-300 tap-scale ${
+              !isLogin
+                ? 'bg-card text-foreground shadow-lg'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            disabled={isLoading}
+          >
+            Sign Up
+          </button>
+          <button
+            onClick={() => setIsLogin(true)}
+            className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-300 tap-scale ${
+              isLogin
+                ? 'bg-card text-foreground shadow-lg'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            disabled={isLoading}
+          >
+            Sign In
+          </button>
+        </div>
+
         <h2 className="text-2xl font-bold text-center mb-2">
           {isLogin ? 'Welcome back' : 'Create your account'}
         </h2>
         <p className="text-muted-foreground text-center mb-8">
           {isLogin ? 'Sign in to continue your journey' : 'Join thousands quitting smoking'}
         </p>
-
-        {/* Social Buttons */}
-        <div className="space-y-3 mb-6">
-          <Button
-            variant="social"
-            className="w-full justify-center gap-3"
-            onClick={handleGoogleAuth}
-            disabled={isLoading}
-          >
-            <Chrome className="w-5 h-5" />
-            Continue with Google
-          </Button>
-          <Button
-            variant="social"
-            className="w-full justify-center gap-3"
-            onClick={handleAppleAuth}
-            disabled={isLoading}
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-            </svg>
-            Continue with Apple
-          </Button>
-        </div>
-
-        {/* Divider */}
-        <div className="relative my-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-card text-muted-foreground">or continue with email</span>
-          </div>
-        </div>
 
         {/* Email Form */}
         <form onSubmit={handleEmailAuth} className="space-y-4">
@@ -190,7 +174,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
             </button>
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Password"
+              placeholder="Password (min 6 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="glass-input pr-12"
@@ -214,16 +198,31 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           </Button>
         </form>
 
-        {/* Toggle */}
-        <p className="text-center mt-6 text-muted-foreground">
-          {isLogin ? "Don't have an account? " : 'Already have an account? '}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-primary font-semibold hover:underline tap-scale"
-            disabled={isLoading}
-          >
-            {isLogin ? 'Sign up' : 'Sign in'}
-          </button>
+        {/* Info text */}
+        <p className="text-center mt-6 text-sm text-muted-foreground">
+          {isLogin ? (
+            <>
+              New here?{' '}
+              <button
+                onClick={() => setIsLogin(false)}
+                className="text-primary font-semibold hover:underline tap-scale"
+                disabled={isLoading}
+              >
+                Create an account
+              </button>
+            </>
+          ) : (
+            <>
+              Already have an account?{' '}
+              <button
+                onClick={() => setIsLogin(true)}
+                className="text-primary font-semibold hover:underline tap-scale"
+                disabled={isLoading}
+              >
+                Sign in
+              </button>
+            </>
+          )}
         </p>
       </div>
 
