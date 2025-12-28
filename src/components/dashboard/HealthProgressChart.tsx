@@ -9,21 +9,22 @@ interface HealthProgressChartProps {
 
 const HealthProgressChart: React.FC<HealthProgressChartProps> = ({ hoursSinceQuit }) => {
   // Determine current progress point based on hours
+  // Index 0 = Start (baseline), Index 1 = 20min, etc.
   const getCurrentDataIndex = () => {
-    if (hoursSinceQuit < 0.33) return 0;
-    if (hoursSinceQuit < 8) return 0;
-    if (hoursSinceQuit < 24) return 1;
-    if (hoursSinceQuit < 48) return 2;
-    if (hoursSinceQuit < 72) return 3;
-    if (hoursSinceQuit < 168) return 4;
-    if (hoursSinceQuit < 336) return 5;
-    if (hoursSinceQuit < 720) return 6;
-    if (hoursSinceQuit < 2160) return 7;
-    if (hoursSinceQuit < 4320) return 8;
-    if (hoursSinceQuit < 6480) return 9;
-    if (hoursSinceQuit < 8760) return 10;
-    if (hoursSinceQuit < 43800) return 11;
-    return 12;
+    if (hoursSinceQuit < 0.33) return 0; // Less than 20 min = baseline
+    if (hoursSinceQuit < 8) return 1;    // 20 min - 8 hr
+    if (hoursSinceQuit < 24) return 2;   // 8 hr - 24 hr
+    if (hoursSinceQuit < 48) return 3;   // 24 hr - 48 hr
+    if (hoursSinceQuit < 72) return 4;   // 48 hr - 72 hr
+    if (hoursSinceQuit < 168) return 5;  // 72 hr - 1 wk
+    if (hoursSinceQuit < 336) return 6;  // 1 wk - 2 wk
+    if (hoursSinceQuit < 720) return 7;  // 2 wk - 1 mo
+    if (hoursSinceQuit < 2160) return 8; // 1 mo - 3 mo
+    if (hoursSinceQuit < 4320) return 9; // 3 mo - 6 mo
+    if (hoursSinceQuit < 6480) return 10; // 6 mo - 9 mo
+    if (hoursSinceQuit < 8760) return 11; // 9 mo - 1 yr
+    if (hoursSinceQuit < 43800) return 12; // 1 yr - 5 yr
+    return 13; // 5+ years
   };
 
   const currentIndex = getCurrentDataIndex();

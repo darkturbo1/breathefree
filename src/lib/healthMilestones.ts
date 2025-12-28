@@ -406,7 +406,9 @@ export function getCurrentAndNextMilestone(hoursSinceQuit: number) {
 }
 
 // Health improvement data for charts (percentage of recovery)
+// Index 0 is baseline (just quit), values progress from there
 export const healthRecoveryData = [
+  { time: 'Start', heartRate: 0, oxygen: 0, lungFunction: 0, circulation: 0 },
   { time: '20min', heartRate: 100, oxygen: 10, lungFunction: 0, circulation: 5 },
   { time: '8hr', heartRate: 100, oxygen: 50, lungFunction: 0, circulation: 10 },
   { time: '24hr', heartRate: 100, oxygen: 100, lungFunction: 5, circulation: 15 },
