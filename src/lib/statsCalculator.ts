@@ -1,4 +1,4 @@
-import { UserData, Stats } from '@/types/smoking';
+import { UserData, Stats, getCurrencySymbol } from '@/types/smoking';
 import { getCurrentAndNextMilestone } from './healthMilestones';
 
 export function calculateStats(userData: UserData): Stats {
@@ -51,8 +51,9 @@ export function formatTime(time: Stats['timeSinceQuit']): string {
   return `${time.seconds}s`;
 }
 
-export function formatMoney(amount: number, currency = '€'): string {
-  return `${currency}${amount.toFixed(2)}`;
+export function formatMoney(amount: number, currencyCode = 'EUR'): string {
+  const symbol = getCurrencySymbol(currencyCode);
+  return `${symbol}${amount.toFixed(2)}`;
 }
 
 export function formatLifetime(minutes: number): string {

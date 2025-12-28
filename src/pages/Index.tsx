@@ -99,7 +99,15 @@ const Index: React.FC = () => {
   }
 
   if (step === 'dashboard' && userData && stats) {
-    return <Dashboard userData={userData} stats={stats} onReset={handleReset} onResetProgram={resetProgram} />;
+    return (
+      <Dashboard 
+        userData={userData} 
+        stats={stats} 
+        onReset={handleReset} 
+        onResetProgram={resetProgram} 
+        onUpdateUserData={saveUserData}
+      />
+    );
   }
 
   return null;
