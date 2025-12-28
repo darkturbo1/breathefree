@@ -10,10 +10,11 @@ interface SubscriptionState {
 
 export function useSubscription() {
   const [state, setState] = useState<SubscriptionState>({
-    subscribed: false,
+    // TEMPORARY: Set to true for testing Pro features
+    subscribed: true,
     productId: null,
     subscriptionEnd: null,
-    isLoading: true,
+    isLoading: false,
   });
 
   const checkSubscription = useCallback(async () => {
