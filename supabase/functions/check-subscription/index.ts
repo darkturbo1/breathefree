@@ -61,15 +61,36 @@ serve(async (req) => {
       limit: 1,
     });
     const hasActiveSub = subscriptions.data.length > 0;
-    let productId = null;
-    let subscriptionEnd = null;
+    let productId: string | null = null;
+    let subscriptionEnd: string | null = null;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      logStep("Subscription data", { 
+        id: subscription.id, 
+        current_period_end: subscription.current_period_end,
+        items: subscription.items?.data?.length 
+      });
+      
+      // Handle current_period_end - it's a Unix timestamp in seconds
+      if (subscription.current_period_end) {
+        try {
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        } catch (e) {
+          logStep("Warning: Could not parse subscription end date", { 
+            raw: subscription.current_period_end,
+            error: String(e)
+          });
+        }
+      }
+      
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
-      productId = subscription.items.data[0].price.product;
-      logStep("Determined subscription tier", { productId });
+      
+      // Get product ID from subscription items
+      if (subscription.items?.data?.[0]?.price?.product) {
+        productId = subscription.items.data[0].price.product;
+        logStep("Determined subscription tier", { productId });
+      }
     } else {
       logStep("No active subscription found");
     }
