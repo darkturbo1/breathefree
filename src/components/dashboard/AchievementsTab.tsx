@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { calculateMilestones } from '@/lib/healthMilestones';
 import MilestoneCard from './MilestoneCard';
-import { Trophy, CheckCircle2, Clock, Lock, Crown, TrendingUp, Calendar, Target } from 'lucide-react';
+import HealthProgressChart from './HealthProgressChart';
+import { Trophy, CheckCircle2, Clock, Lock, Crown, TrendingUp, Calendar, Target, BarChart3 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Button } from '@/components/ui/button';
 import {
@@ -80,7 +81,12 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ hoursSinceQuit }) => 
         )}
       </div>
 
-      {/* Pro Analytics Preview */}
+      {/* Pro Health Progress Chart */}
+      {subscribed && (
+        <HealthProgressChart hoursSinceQuit={hoursSinceQuit} />
+      )}
+
+      {/* Pro Analytics Preview (for non-subscribers) */}
       {!subscribed && (
         <div 
           className="glass-panel-strong p-6 cursor-pointer tap-scale border-amber-500/30"
@@ -88,55 +94,32 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ hoursSinceQuit }) => 
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-amber-500" />
-              Detailed Analytics
+              <BarChart3 className="w-5 h-5 text-amber-500" />
+              Health Progress Charts
             </h3>
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/20">
               <Crown className="w-3 h-3 text-amber-500" />
               <span className="text-xs text-amber-500 font-medium">PRO</span>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3 opacity-50 blur-[2px]">
-            <div className="bg-secondary rounded-xl p-3 text-center">
-              <Calendar className="w-5 h-5 mx-auto mb-1 text-primary" />
-              <p className="text-xs text-muted-foreground">Weekly</p>
+          <div className="grid grid-cols-2 gap-3 opacity-50 blur-[2px]">
+            <div className="bg-secondary rounded-xl p-4 text-center">
+              <TrendingUp className="w-6 h-6 mx-auto mb-2 text-success" />
+              <p className="text-xs text-muted-foreground">Lung Function</p>
+              <p className="text-lg font-bold">30%</p>
             </div>
-            <div className="bg-secondary rounded-xl p-3 text-center">
-              <TrendingUp className="w-5 h-5 mx-auto mb-1 text-success" />
-              <p className="text-xs text-muted-foreground">Trends</p>
+            <div className="bg-secondary rounded-xl p-4 text-center">
+              <Calendar className="w-6 h-6 mx-auto mb-2 text-primary" />
+              <p className="text-xs text-muted-foreground">Circulation</p>
+              <p className="text-lg font-bold">60%</p>
             </div>
-            <div className="bg-secondary rounded-xl p-3 text-center">
-              <Target className="w-5 h-5 mx-auto mb-1 text-warning" />
-              <p className="text-xs text-muted-foreground">Goals</p>
-            </div>
+          </div>
+          <div className="h-24 mt-4 bg-secondary rounded-xl opacity-50 blur-[2px] flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">Interactive Health Charts</p>
           </div>
           <div className="mt-4 flex items-center justify-center gap-2 text-amber-500">
             <Lock className="w-4 h-4" />
-            <span className="text-sm font-medium">Unlock with Pro</span>
-          </div>
-        </div>
-      )}
-
-      {/* Pro Analytics (for subscribers) */}
-      {subscribed && (
-        <div className="glass-panel-strong p-6">
-          <h3 className="font-semibold flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-primary" />
-            Your Progress Analytics
-          </h3>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-secondary rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-primary">{Math.floor(hoursSinceQuit / 24)}</p>
-              <p className="text-xs text-muted-foreground">Days Strong</p>
-            </div>
-            <div className="bg-secondary rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-success">{achieved.length}</p>
-              <p className="text-xs text-muted-foreground">Wins Unlocked</p>
-            </div>
-            <div className="bg-secondary rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-warning">{upcoming[0]?.progress.toFixed(0) || 100}%</p>
-              <p className="text-xs text-muted-foreground">Next Goal</p>
-            </div>
+            <span className="text-sm font-medium">Unlock Health Analytics</span>
           </div>
         </div>
       )}
