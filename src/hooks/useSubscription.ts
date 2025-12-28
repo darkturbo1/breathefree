@@ -8,16 +8,23 @@ interface SubscriptionState {
   isLoading: boolean;
 }
 
+// TEMPORARY: Testing mode - always return subscribed
+const TESTING_MODE = true;
+
 export function useSubscription() {
   const [state, setState] = useState<SubscriptionState>({
-    // TEMPORARY: Set to true for testing Pro features
-    subscribed: true,
-    productId: null,
+    subscribed: TESTING_MODE,
+    productId: TESTING_MODE ? 'prod_test' : null,
     subscriptionEnd: null,
     isLoading: false,
   });
 
   const checkSubscription = useCallback(async () => {
+    // Skip subscription check in testing mode
+    if (TESTING_MODE) {
+      return;
+    }
+    
     try {
       // First check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
@@ -49,6 +56,11 @@ export function useSubscription() {
   }, []);
 
   useEffect(() => {
+    // Skip all subscription checks in testing mode
+    if (TESTING_MODE) {
+      return;
+    }
+    
     checkSubscription();
     
     // Listen for auth state changes
