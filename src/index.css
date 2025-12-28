@@ -490,3 +490,17 @@
   opacity: 0;
   transition: opacity 0.3s;
 }
+
+/* iOS Safe Area Utilities */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}

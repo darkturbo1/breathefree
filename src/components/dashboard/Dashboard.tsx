@@ -84,7 +84,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onReset
         return (
           <>
             {/* Hero Timer */}
-            <div className="glass-panel-strong p-8 text-center animate-fade-in">
+            <div className="glass-panel-strong p-6 text-center animate-fade-in">
               <p className="text-sm text-muted-foreground mb-3">Smoke-free for</p>
               <div className="text-5xl md:text-6xl font-bold gradient-text mb-4 tabular-nums">
                 {formatTime(stats.timeSinceQuit)}
@@ -103,7 +103,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onReset
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-4 stagger-children">
+            <div className="grid grid-cols-2 gap-3 stagger-children">
               <StatCard
                 icon={<Cigarette className="w-5 h-5" />}
                 label="Not Smoked"
@@ -200,12 +200,12 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onReset
   };
 
   return (
-    <div className="min-h-screen gradient-bg pb-24">
+    <div className="min-h-screen gradient-bg pb-28 pt-safe">
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-2xl bg-background/70 border-b border-border/50">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-40 backdrop-blur-2xl bg-background/70 border-b border-border/50 pt-safe">
+        <div className="max-w-2xl mx-auto px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
               <Wind className="w-5 h-5 text-primary" />
             </div>
             <div>
@@ -255,7 +255,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onReset
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-2xl mx-auto px-5 py-5 space-y-5">
         {renderTabContent()}
       </main>
 
