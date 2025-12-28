@@ -10,10 +10,19 @@ import JournalTab from './JournalTab';
 import AchievementsTab from './AchievementsTab';
 import MotivationTab from './MotivationTab';
 import SettingsSheet from '../settings/SettingsSheet';
-import { Wind, Clock, Cigarette, Wallet, Heart, Trophy, MessageCircle, LogOut, ChevronDown, User, Settings } from 'lucide-react';
+import { Wind, Clock, Cigarette, Wallet, Heart, Trophy, MessageCircle, LogOut, ChevronDown, User, Settings, Crown, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface DashboardProps {
   userData: UserData;
@@ -24,11 +33,13 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
   const [showChat, setShowChat] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [showAllMilestones, setShowAllMilestones] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const { toast } = useToast();
+  const { subscribed, isLoading: subLoading, startCheckout } = useSubscription();
 
   useEffect(() => {
     const getUser = async () => {
@@ -165,6 +176,27 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
     }
   };
 
+  const handleChatClick = () => {
+    if (subscribed) {
+      setShowChat(true);
+    } else {
+      setShowProModal(true);
+    }
+  };
+
+  const handleUpgrade = async () => {
+    try {
+      await startCheckout();
+      setShowProModal(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start checkout. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-bg pb-24">
       {/* Header */}
@@ -175,7 +207,15 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
               <Wind className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="font-bold gradient-text text-lg">BreatheFree</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-bold gradient-text text-lg">BreatheFree</h1>
+                {subscribed && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-xs px-2 py-0.5">
+                    <Crown className="w-3 h-3 mr-1" />
+                    PRO
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">Stay strong!</p>
             </div>
           </div>
@@ -219,18 +259,70 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset }) => {
 
       {/* Chat FAB */}
       <button
-        onClick={() => setShowChat(true)}
+        onClick={handleChatClick}
         className="fixed bottom-24 right-6 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 z-40 tap-scale shadow-glow-lg"
         style={{ background: 'var(--gradient-primary)' }}
       >
-        <MessageCircle className="w-6 h-6 text-primary-foreground" />
+        {subscribed ? (
+          <MessageCircle className="w-6 h-6 text-primary-foreground" />
+        ) : (
+          <div className="relative">
+            <MessageCircle className="w-6 h-6 text-primary-foreground" />
+            <Lock className="w-3 h-3 text-primary-foreground absolute -top-1 -right-1" />
+          </div>
+        )}
       </button>
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
+      {/* Pro Upgrade Modal */}
+      <Dialog open={showProModal} onOpenChange={setShowProModal}>
+        <DialogContent className="glass-panel-strong border-border/50">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Crown className="w-6 h-6 text-amber-500" />
+              Upgrade to Pro
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Unlock the AI Breathe Coach and get personalized support on your quit journey.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <MessageCircle className="w-4 h-4 text-primary" />
+                </div>
+                <span>24/7 AI Coaching Support</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-primary" />
+                </div>
+                <span>Personalized Craving Help</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Trophy className="w-4 h-4 text-primary" />
+                </div>
+                <span>Motivation & Tips</span>
+              </div>
+            </div>
+            <div className="text-center py-2">
+              <span className="text-3xl font-bold">$3</span>
+              <span className="text-muted-foreground">/month</span>
+            </div>
+            <Button onClick={handleUpgrade} className="w-full" size="lg">
+              <Crown className="w-4 h-4 mr-2" />
+              Upgrade Now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Modals */}
-      {showChat && <ChatBot onClose={() => setShowChat(false)} />}
+      {showChat && subscribed && <ChatBot onClose={() => setShowChat(false)} />}
       <SettingsSheet open={showSettings} onOpenChange={setShowSettings} userEmail={userEmail} />
     </div>
   );
