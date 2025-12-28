@@ -1,1 +1,4 @@
 project_id = "rjyjuisvkflqagzqxiux"
+
+[functions.quit-coach-chat]
+verify_jwt = false
