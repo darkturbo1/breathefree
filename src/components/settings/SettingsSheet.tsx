@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +13,7 @@ import { UserData, CURRENCIES, getCurrencySymbol } from '@/types/smoking';
 import { 
   User, CreditCard, Shield, Loader2, Crown, Check, ExternalLink, 
   RotateCcw, AlertTriangle, Cigarette, Settings2, Mail, Lock, 
-  Coins, Package, Calendar
+  Coins, Package, Calendar, MessageCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import {
@@ -46,6 +47,7 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
   onUpdateUserData
 }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { subscribed, subscriptionEnd, isLoading: subLoading, startCheckout, openCustomerPortal } = useSubscription();
   
   const [newEmail, setNewEmail] = useState('');
@@ -445,6 +447,30 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
                 ) : (
                   'Update Password'
                 )}
+              </Button>
+            </div>
+
+            <Separator />
+
+            {/* Contact Us */}
+            <div className="glass-panel p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageCircle className="w-4 h-4 text-primary" />
+                <Label className="font-semibold">Need Help?</Label>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Have questions or feedback? We'd love to hear from you.
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate('/contact');
+                }}
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Contact Us
               </Button>
             </div>
           </TabsContent>
