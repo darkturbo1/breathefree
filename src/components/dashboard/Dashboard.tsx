@@ -207,11 +207,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userData, stats, onReset, onReset
         <div className="max-w-2xl mx-auto px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl overflow-hidden">
-              <img src={appLogo} alt="BreatheFree" className="w-full h-full object-cover" />
+              <img src={appLogo} alt="Oxyfree" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-bold gradient-text text-lg">BreatheFree</h1>
+                <h1 className="font-bold gradient-text text-lg">Oxyfree</h1>
                 {subscribed && (
                   <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-xs px-2 py-0.5">
                     <Crown className="w-3 h-3 mr-1" />

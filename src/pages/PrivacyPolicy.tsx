@@ -30,7 +30,7 @@ const PrivacyPolicy = () => {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">Introduction</h2>
             <p className="text-muted-foreground leading-relaxed">
-              BreatheFree ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application.
+              Oxyfree ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application.
             </p>
           </section>
 
@@ -124,7 +124,7 @@ const PrivacyPolicy = () => {
               If you have any questions about this Privacy Policy, please contact us at:
             </p>
             <p className="text-primary font-medium">
-              support@breathefree.app
+              support@oxyfree.app
             </p>
           </section>
         </div>
