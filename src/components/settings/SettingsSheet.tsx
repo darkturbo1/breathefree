@@ -13,7 +13,7 @@ import { UserData, CURRENCIES, getCurrencySymbol } from '@/types/smoking';
 import { 
   User, CreditCard, Shield, Loader2, Crown, Check, ExternalLink, 
   RotateCcw, AlertTriangle, Cigarette, Settings2, Mail, Lock, 
-  Coins, Package, Calendar, MessageCircle
+  Coins, Package, Calendar, MessageCircle, FileText
 } from 'lucide-react';
 import { format } from 'date-fns';
 import {
@@ -471,6 +471,25 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
               >
                 <Mail className="w-4 h-4 mr-2" />
                 Contact Us
+              </Button>
+            </div>
+
+            {/* Privacy Policy */}
+            <div className="glass-panel p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <Label className="font-semibold">Legal</Label>
+              </div>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate('/privacy');
+                }}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Privacy Policy
               </Button>
             </div>
           </TabsContent>
