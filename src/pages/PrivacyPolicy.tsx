@@ -124,7 +124,7 @@ const PrivacyPolicy = () => {
               If you have any questions about this Privacy Policy, please contact us at:
             </p>
             <p className="text-primary font-medium">
-              support@oxyfree.app
+              hello@spinosimedia.ch
             </p>
           </section>
         </div>
