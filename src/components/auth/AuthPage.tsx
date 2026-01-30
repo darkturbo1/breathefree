@@ -90,7 +90,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
         if (data.user) {
           toast({
             title: "Account created!",
-            description: "Welcome to Oxyfree!",
+            description: "Welcome to BreatheFree!",
           });
           onAuthSuccess();
         }
@@ -111,9 +111,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
       {/* Logo */}
       <div className="text-center mb-10 animate-fade-in">
         <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl mb-6 animate-float overflow-hidden">
-          <img src={appLogo} alt="Oxyfree Logo" className="w-full h-full object-cover" />
+          <img src={appLogo} alt="BreatheFree Logo" className="w-full h-full object-cover" />
         </div>
-        <h1 className="text-4xl font-bold gradient-text mb-2">Oxyfree</h1>
+        <h1 className="text-4xl font-bold gradient-text mb-2">BreatheFree</h1>
         <p className="text-muted-foreground text-lg">Start your smoke-free journey</p>
       </div>
 

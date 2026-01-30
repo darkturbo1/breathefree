@@ -2,8 +2,8 @@
 
 ## ✅ Completed in This Project
 
-- [x] App ID configured: `app.oxyfree.quit`
-- [x] App Name: `Oxyfree`
+- [x] App ID configured: `app.breathefree.quit`
+- [x] App Name: `BreatheFree`
 - [x] Capacitor iOS configured with proper settings
 - [x] Splash screen plugin configured
 - [x] Status bar plugin configured
@@ -33,8 +33,8 @@ npx cap sync ios
 
 ### 4. Configure Xcode Project
 Open Xcode and configure:
-- **Display Name**: Oxyfree
-- **Bundle Identifier**: app.oxyfree.quit
+- **Display Name**: BreatheFree
+- **Bundle Identifier**: app.breathefree.quit
 - **Version**: 1.0.0
 - **Build**: 1
 - **Deployment Target**: iOS 14.0 or higher
@@ -64,9 +64,9 @@ Create `ios/App/App/PrivacyInfo.xcprivacy`:
 
 ### 7. App Store Connect Setup
 1. Go to https://appstoreconnect.apple.com
-2. Create a new app with Bundle ID: `app.oxyfree.quit`
+2. Create a new app with Bundle ID: `app.breathefree.quit`
 3. Fill in required metadata:
-   - **App Name**: Oxyfree - Quit Smoking
+   - **App Name**: BreatheFree - Quit Smoking
    - **Subtitle**: Track your smoke-free journey
    - **Category**: Health & Fitness
    - **Keywords**: quit smoking, stop smoking, health tracker, smoke free, nicotine, cessation
@@ -82,7 +82,7 @@ Create `ios/App/App/PrivacyInfo.xcprivacy`:
 
 ### 9. App Description
 ```
-Oxyfree helps you quit smoking and track your progress every step of the way.
+BreatheFree helps you quit smoking and track your progress every step of the way.
 
 FEATURES:
 • Track your smoke-free days, hours, and minutes
@@ -94,7 +94,7 @@ FEATURES:
 • Beautiful, motivating dashboard
 
 START YOUR SMOKE-FREE JOURNEY TODAY
-Every cigarette not smoked is a victory. Oxyfree shows you exactly how far you've come and motivates you to keep going.
+Every cigarette not smoked is a victory. BreatheFree shows you exactly how far you've come and motivates you to keep going.
 
 HEALTH MILESTONES
 Watch as your body heals - from improved circulation within hours to reduced cancer risk over years.
