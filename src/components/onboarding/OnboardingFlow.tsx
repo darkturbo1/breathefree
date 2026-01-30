@@ -100,7 +100,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6 animate-float">
           <Wind className="w-10 h-10 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold gradient-text mb-2">Oxyfree</h1>
+        <h1 className="text-3xl font-bold gradient-text mb-2">BreatheFree</h1>
         <p className="text-muted-foreground">Let's personalize your journey</p>
       </div>
 

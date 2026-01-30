@@ -1,13 +1,13 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.oxyfree.quit',
-  appName: 'Oxyfree',
+  appId: 'app.breathefree.quit',
+  appName: 'BreatheFree',
   webDir: 'dist',
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
-    scheme: 'Oxyfree'
+    scheme: 'BreatheFree'
   },
   plugins: {
     SplashScreen: {
