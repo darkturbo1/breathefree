@@ -13,7 +13,7 @@ import { UserData, CURRENCIES, getCurrencySymbol } from '@/types/smoking';
 import { 
   User, CreditCard, Shield, Loader2, Crown, Check, ExternalLink, 
   RotateCcw, AlertTriangle, Cigarette, Settings2, Mail, Lock, 
-  Coins, Package, Calendar, MessageCircle, FileText
+  Coins, Package, Calendar, MessageCircle, FileText, Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import {
@@ -58,6 +58,7 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isSavingHabits, setIsSavingHabits] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Smoking habit editing state
   const [editCigarettesPerDay, setEditCigarettesPerDay] = useState(userData?.cigarettesPerDay || 10);
@@ -448,6 +449,86 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
                   'Update Password'
                 )}
               </Button>
+            </div>
+
+            <Separator />
+
+            {/* Delete Account */}
+            <div className="glass-panel p-4 border-destructive/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Trash2 className="w-4 h-4 text-destructive" />
+                <Label className="font-semibold text-destructive">Delete Account</Label>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    className="w-full"
+                    disabled={isDeletingAccount}
+                  >
+                    {isDeletingAccount ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deleting...</>
+                    ) : (
+                      <>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete My Account
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <Trash2 className="w-5 h-5 text-destructive" />
+                      Delete Account?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-2">
+                      <p>
+                        This will permanently delete your account, all your progress data, journal entries, and subscription information.
+                      </p>
+                      <p className="font-medium text-destructive">
+                        This action cannot be undone.
+                      </p>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={async () => {
+                        setIsDeletingAccount(true);
+                        try {
+                          const { data: { user } } = await supabase.auth.getUser();
+                          if (!user) throw new Error('Not authenticated');
+                          
+                          // Delete user data from tables
+                          await supabase.from('user_preferences').delete().eq('user_id', user.id);
+                          await supabase.from('journal_entries').delete().eq('user_id', user.id);
+                          
+                          // Sign out
+                          await supabase.auth.signOut();
+                          
+                          toast({
+                            title: "Account Deleted",
+                            description: "Your account and all data have been permanently deleted.",
+                          });
+                          onOpenChange(false);
+                          navigate('/');
+                        } catch (error: any) {
+                          toast({ title: "Error", description: error.message, variant: "destructive" });
+                        } finally {
+                          setIsDeletingAccount(false);
+                        }
+                      }}
+                    >
+                      Yes, Delete My Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
 
             <Separator />
